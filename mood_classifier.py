@@ -42,11 +42,7 @@ def train_random_forest(df):
     df = df.copy()
     df['mood_class'] = df['mood'].apply(discretize_mood)
 
-    feature_cols = [
-        'mood_trend', 'screen_mean', 'arousal_trend', 'valence_trend',
-        'appCat.communication_mean', 'appCat.entertainment_mean',
-        'appCat.game_mean', 'appCat.office_mean', 'appCat.other_mean'
-    ]
+    feature_cols = [col for col in df.columns if col not in ['mood','id','date','mood_class']]
 
     X = df[feature_cols]
     y = df['mood_class']
@@ -94,11 +90,7 @@ def train_lstm(df):
 
     df['mood_class'] = df['mood'].apply(discretize_mood)
 
-    features = [
-        'mood_trend', 'screen_mean', 'arousal_trend', 'valence_trend',
-        'appCat.communication_mean', 'appCat.entertainment_mean',
-        'appCat.game_mean', 'appCat.office_mean', 'appCat.other_mean'
-    ]
+    feature_cols = [col for col in df.columns if col not in ['mood','id','date','mood_class']]
     sequence_length = 5
     x_seq, y_seq = [], []
 
@@ -107,7 +99,7 @@ def train_lstm(df):
         if len(group) < sequence_length + 1:
             continue
         for i in range(len(group) - sequence_length):
-            seq = group.loc[i:i+sequence_length-1, features].values
+            seq = group.loc[i:i+sequence_length-1, feature_cols].values
             target = group.loc[i+sequence_length, 'mood_class']
             x_seq.append(seq)
             y_seq.append(target)
@@ -160,13 +152,13 @@ def train_lstm(df):
 # === Example Usage ===
 if __name__ == "__main__":
     print("Start classification median.")
-    df_median = pd.read_csv("df_median_final.csv")
+    df_median = pd.read_csv("all_df_median.csv")
     print_mood_distribution(df_median, "Median")
     train_random_forest(df_median)
     train_lstm(df_median)
     
     print("Start classification kalman.")
-    df_kalman = pd.read_csv("df_kalman_final.csv")
+    df_kalman = pd.read_csv("all_df_kalman.csv")
     print_mood_distribution(df_kalman, "Kalman")
     train_random_forest(df_kalman)
     train_lstm(df_kalman)
