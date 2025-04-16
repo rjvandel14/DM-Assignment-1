@@ -96,11 +96,11 @@ def train_lstm(df):
     df['mood_class'] = df['mood'].apply(discretize_mood)
 
     feature_cols = [col for col in df.columns if col not in ['mood', 'id', 'date', 'mood_class']]
-    feature_cols = [
-        'mood_trend', 'screen_mean', 'arousal_trend', 'valence_trend',
-        'appCat.communication_mean', 'appCat.entertainment_mean',
-        'appCat.game_mean', 'appCat.office_mean', 'appCat.other_mean'
-    ]
+    # feature_cols = [
+    #     'mood_trend', 'screen_mean', 'arousal_trend', 'valence_trend',
+    #     'appCat.communication_mean', 'appCat.entertainment_mean',
+    #     'appCat.game_mean', 'appCat.office_mean', 'appCat.other_mean'
+    # ]
     sequence_length = 5
     x_seq, y_seq = [], []
 
@@ -162,15 +162,15 @@ def train_lstm(df):
 # === Example Usage ===
 if __name__ == "__main__":
     print("Start classification median.")
-    df_median = pd.read_csv("df_median_final.csv")
-    #df_median = pd.read_csv("all_df_median.csv")
+    #df_median = pd.read_csv("df_median_final.csv")
+    df_median = pd.read_csv("all_df_median.csv")
     print_mood_distribution(df_median, "Median")
     train_random_forest(df_median)
     train_lstm(df_median)
     
     print("Start classification kalman.")
-    df_kalman = pd.read_csv("df_kalman_final.csv")
-    #df_kalman = pd.read_csv("all_df_kalman.csv")
+    #df_kalman = pd.read_csv("df_kalman_final.csv")
+    df_kalman = pd.read_csv("all_df_kalman.csv")
     print_mood_distribution(df_kalman, "Kalman")
     train_random_forest(df_kalman)
     train_lstm(df_kalman)
