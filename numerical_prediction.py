@@ -1,10 +1,23 @@
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from xgboost import XGBRegressor
 from tensorflow.keras.models import Sequential #type: ignore
 from tensorflow.keras.layers import GRU, Dense #type: ignore
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
+
+def plot_pred_vs_actual(y_test, y_pred, title):
+    plt.figure(figsize=(6, 6))
+    plt.scatter(y_test, y_pred, alpha=0.5)
+    plt.plot([1, 10], [1, 10], '--', color='gray')  # 45-degree line
+    plt.xlabel("True Mood")
+    plt.ylabel("Predicted Mood")
+    plt.title(f"Predicted vs Actual Mood ({title})")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 def train_xgboost(df):
     df = df.copy()
@@ -23,6 +36,8 @@ def train_xgboost(df):
     mse = mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
     print(f"✅ XGBoost - MSE: {mse:.3f}, MAE: {mae:.3f}")
+    plot_pred_vs_actual(y_test, y_pred, "XGBoost")
+
 
 def train_gru(df):
     df = df.copy()
@@ -67,18 +82,18 @@ def train_gru(df):
     y_pred = model.predict(x_test).flatten()
     mse = mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
-    print(f"✅ GRU - MSE: {mse:.3f}, MAE: {mae:.3f}")
+    print(f"GRU - MSE: {mse:.3f}, MAE: {mae:.3f}")
+    plot_pred_vs_actual(y_test, y_pred, "GRU")
 
-import pandas as pd
 
 if __name__ == "__main__":
-    print("🚀 Start regression on median dataset")
+    print("Start regression on median dataset")
     df_median = pd.read_csv("reduced_median.csv")
     print(f"Using {df_median.shape[1] - 3} features for median dataset")  # minus id, date, mood
     train_xgboost(df_median)
     train_gru(df_median)
 
-    print("\n🚀 Start regression on kalman dataset")
+    print("\n Start regression on kalman dataset")
     df_kalman = pd.read_csv("reduced_kalman.csv")
     print(f"Using {df_kalman.shape[1] - 3} features for kalman dataset")
     train_xgboost(df_kalman)
