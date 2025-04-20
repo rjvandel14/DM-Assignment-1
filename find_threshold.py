@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
@@ -17,11 +16,11 @@ def find_best_features_and_save(df, name, thresholds=[0, 0.01, 0.02, 0.03, 0.04,
     df['mood_class'] = df['mood'].apply(discretize_mood)
 
     original_features = [col for col in df.columns if col not in ['id', 'date', 'mood', 'mood_class']]
-    X_full = df[original_features]
+    x_full = df[original_features]
     y = df['mood_class']
 
     rf = RandomForestClassifier(random_state=42, class_weight='balanced')
-    rf.fit(X_full, y)
+    rf.fit(x_full, y)
     importances = rf.feature_importances_
 
     best_score = 0
@@ -33,12 +32,12 @@ def find_best_features_and_save(df, name, thresholds=[0, 0.01, 0.02, 0.03, 0.04,
         if not selected:
             continue
 
-        X = df[selected]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
+        x = df[selected]
+        x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=0.2, random_state=42)
 
         clf = RandomForestClassifier(random_state=42, class_weight='balanced')
-        clf.fit(X_train, y_train)
-        preds = clf.predict(X_test)
+        clf.fit(x_train, y_train)
+        preds = clf.predict(x_test)
 
         score = f1_score(y_test, preds, average='macro')
         if verbose:

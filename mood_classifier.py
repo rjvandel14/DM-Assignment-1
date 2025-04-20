@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 from sklearn.ensemble import RandomForestClassifier
 from tensorflow.keras.models import Sequential # type: ignore
@@ -27,11 +27,11 @@ def print_mood_distribution(df, name=""):
     print(f"Low: {low}  |  Medium: {medium}  |  High: {high}")
     print(f"Total: {low + medium + high} (sanity: {len(df)})")
     
-def evaluate_baseline(X_train, y_train, X_test, y_test):
+def evaluate_baseline(x_train, y_train, x_test, y_test):
     print("\n=== Baseline (Majority Class) ===")
     dummy = DummyClassifier(strategy="most_frequent")
-    dummy.fit(X_train, y_train)
-    y_dummy = dummy.predict(X_test)
+    dummy.fit(x_train, y_train)
+    y_dummy = dummy.predict(x_test)
 
     print(classification_report(y_test, y_dummy))
     print("Confusion Matrix:\n", confusion_matrix(y_test, y_dummy))
@@ -44,15 +44,15 @@ def train_random_forest(df):
 
     feature_cols = [col for col in df.columns if col not in ['mood','id','date','mood_class']]
 
-    X = df[feature_cols]
+    x = df[feature_cols]
     y = df['mood_class']
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, stratify=y, random_state=42
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, stratify=y, random_state=42
     )
 
     param_grid = {
-        'n_estimators': [100],
+        'n_estimators': [100], # Number of trees in the forest
         'max_depth': [10, None],
         'min_samples_split': [2, 5]
     }
@@ -63,15 +63,15 @@ def train_random_forest(df):
         cv=5,
         scoring='f1_macro'
     )
-    grid_search.fit(X_train, y_train)
+    grid_search.fit(x_train, y_train)
 
     best_rf = grid_search.best_estimator_
-    y_pred = best_rf.predict(X_test)
+    y_pred = best_rf.predict(x_test)
 
     print(classification_report(y_test, y_pred))
     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
-    evaluate_baseline(X_train, y_train, X_test, y_test)
+    evaluate_baseline(x_train, y_train, x_test, y_test)
 
     plt.figure(figsize=(10, 5))
     importances = best_rf.feature_importances_
@@ -84,8 +84,7 @@ def train_random_forest(df):
 
     acc = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred, average='macro')
-    print(f"✅ Final RF performance: Accuracy = {acc:.3f} | Macro F1 = {f1:.3f}")
-
+    print(f"Final RF performance: Accuracy = {acc:.3f} | Macro F1 = {f1:.3f}")
 
 def train_lstm(df):
     print("=== Training LSTM ===")
@@ -156,10 +155,8 @@ def train_lstm(df):
 
     acc = accuracy_score(y_test, y_pred_labels)
     f1 = f1_score(y_test, y_pred_labels, average='macro')
-    print(f"✅ Final LSTM performance: Accuracy = {acc:.3f} | Macro F1 = {f1:.3f}")
+    print(f"Final LSTM performance: Accuracy = {acc:.3f} | Macro F1 = {f1:.3f}")
 
-
-# === Example Usage ===
 if __name__ == "__main__":
     print("Start classification median.")
     df_median = pd.read_csv("reduced_median.csv")

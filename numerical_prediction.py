@@ -22,22 +22,21 @@ def plot_pred_vs_actual(y_test, y_pred, title):
 def train_xgboost(df):
     df = df.copy()
     feature_cols = [col for col in df.columns if col not in ['mood','id','date']]
-    X = df[feature_cols]
+    x = df[feature_cols]
     y = df['mood']
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, random_state=42
     )
 
     model = XGBRegressor(n_estimators=100, max_depth=6, learning_rate=0.1)
-    model.fit(X_train, y_train)
+    model.fit(x_train, y_train)
 
-    y_pred = model.predict(X_test)
+    y_pred = model.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
     print(f"✅ XGBoost - MSE: {mse:.3f}, MAE: {mae:.3f}")
     plot_pred_vs_actual(y_test, y_pred, "XGBoost")
-
 
 def train_gru(df):
     df = df.copy()
@@ -76,8 +75,6 @@ def train_gru(df):
     model.add(GRU(64, input_shape=(sequence_length, x_seq.shape[2])))
     model.add(Dense(1))
     model.compile(optimizer='adam', loss='mse')
-
-    history = model.fit(x_train, y_train, validation_split=0.2, epochs=10, batch_size=32, verbose=0)
 
     y_pred = model.predict(x_test).flatten()
     mse = mean_squared_error(y_test, y_pred)
